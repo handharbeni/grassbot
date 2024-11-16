@@ -12,13 +12,15 @@ const UA = require('user-agents');
 const user_id = "2oFPCxuLB9MNkZX8yUYjIB2r71T";
 const MAX_CONNECTIONS = 1000; // Lower initial max connections to reduce CPU load
 const RELOAD_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const MIN_SUCCESS_RATE = 0.4; // 40%
+const MIN_SUCCESS_RATE = 0.15; // 40%
 const MAX_RETRIES = 5; // Max retry attempts per proxy
+const PERCENTAGE_RELOAD = 0.15; // ratio activehandle need more than 40% to continue the process
 const PROXY_SOURCES_FILE = 'proxy_sources.txt';
 const WORKING_PROXIES_FILE = 'working_proxies.txt';
 
 let workingProxies = new Set();
 let failedProxies = new Set();
+let totalProxies = new Set();
 let proxyRetryCount = {};
 let proxySuccessCount = 0;
 let proxyFailCount = 0;
@@ -56,12 +58,15 @@ async function fetchProxiesFromRandomSource() {
     const randomSource = sources[Math.floor(Math.random() * sources.length)];
     const { url, prefix } = randomSource;
     const newProxies = new Set();
-
+    totalProxies = new Set();
     try {
         const response = await axios.get(url);
         const proxyList = response.data.split('\n').map(line => line.trim()).filter(line => line);
 
-        proxyList.forEach(proxy => newProxies.add(prefix + proxy));
+        proxyList.forEach(proxy => {
+            newProxies.add(prefix + proxy);
+            totalProxies.add(prefix + proxy);
+        });
 
         console.log(`Fetched ${newProxies.size} proxies from ${url}`);
         return newProxies;
@@ -158,28 +163,47 @@ function handleProxyFailure(socksProxy, error) {
     }
 }
 
+// check active handle
+function checkActiveHandle() {
+    const activeRequests = process._getActiveRequests().length;
+    const activeHandlesCount = process._getActiveHandles().length;
+    const percentage = ((activeHandlesCount/totalProxies.size)*100)/100;
+    console.log(`activeRequest ${activeRequests}, activeHandle ratio (${activeHandlesCount} / ${totalProxies.size}) * 100% = ${percentage}`);
+    if ((percentage < PERCENTAGE_RELOAD) && activeRequests === 0) {
+        reloadProxies()
+    }
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Reload proxies based on success rate and refresh strategy
 async function reloadProxies() {
-    const successRate = proxySuccessCount / (proxySuccessCount + proxyFailCount);
-    if (successRate < MIN_SUCCESS_RATE) {
-        console.log("Low success rate detected. Reloading proxies from a new source...");
-        const newProxies = await fetchProxiesFromRandomSource();
-        newProxies.forEach(proxy => {
-            if (!failedProxies.has(proxy)) connectionQueue.push(proxy);
-        });
-        proxySuccessCount = 0;
-        proxyFailCount = 0;
-    }
+    // const successRate = proxySuccessCount / (proxySuccessCount + proxyFailCount);
+    // if (successRate < MIN_SUCCESS_RATE) {
+    // }
+    // console.log("Low success rate detected. Reloading proxies from a new source...");
+    const newProxies = await fetchProxiesFromRandomSource();
+    newProxies.forEach(proxy => {
+        if (!failedProxies.has(proxy)) connectionQueue.push(proxy);
+    });
+    proxySuccessCount = 0;
+    proxyFailCount = 0;
 }
 
 // Main loop
 async function main() {
     const initialProxies = await fetchProxiesFromRandomSource();
     initialProxies.forEach(proxy => connectionQueue.push(proxy));
+    // setInterval(() => {
+    //     reloadProxies();
+    // }, RELOAD_INTERVAL);
+    await wait(1 * 60 * 1000); // Wait for 5 minutes
 
     setInterval(() => {
-        reloadProxies();
-    }, RELOAD_INTERVAL);
+        checkActiveHandle();
+    }, 10 * 1000);
 }
 
 main().catch(console.error);
