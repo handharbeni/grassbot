@@ -294,7 +294,7 @@ async function main() {
 
     await wait(1 * 60 * 1000);
 
-    setInterval(fetchAllDevices, (2 * 60 * 1000));
+    setInterval(fetchAllDevices, (10 * 60 * 1000));
 
     const initialProxies = await fetchProxiesFromRandomSource();
     initialProxies.forEach(proxy => connectionQueue.push(proxy));
