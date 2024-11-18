@@ -133,13 +133,13 @@ function eliminateScore(ws, proxy) {
     }
 }
 
-function getScore(ws, proxy) {
+function getScore(proxy) {
     let extractedProxy = extractProxy(proxy);
     let proxyIsExist = uniqueResults.get(extractedProxy);
     if (proxyIsExist !== undefined) {
         return proxyIsExist;
     } else {
-        return -1;
+        return 76;
     }
 }
 
@@ -154,12 +154,11 @@ function sendPing(ws, socksProxy, intervalId = -1) {
     const pingMsg = JSON.stringify({ id: uuid.v4(), version: "1.0.0", action: "PING", data: {} });
     ws.send(pingMsg);
     console.log(`Sent PING through ${socksProxy} intervalId ${intervalId}`);
-    if (intervalId !== -1) {
-        let score = getScore(ws, socksProxy);
-        if (score < 75) {
-            disconnectWS(ws, socksProxy);
-            clearInterval(intervalId);
-        }
+    let score = getScore(socksProxy);
+    console.log(`proxy ${socksProxy} score ${score}`)
+    if (score < 75) {
+        disconnectWS(ws, socksProxy);
+        clearInterval(intervalId);
     }
 }
 
@@ -212,9 +211,12 @@ function checkActiveHandle() {
     const activeHandlesCount = process._getActiveHandles().length;
     const percentage = ((activeHandlesCount / totalProxies.size) * 100) / 100;
     console.log(`activeRequest ${activeRequests}, activeHandle ratio (${activeHandlesCount} / ${totalProxies.size}) * 100% = ${percentage}`);
-    if ((percentage < PERCENTAGE_RELOAD) && activeRequests < 10) {
-        reloadProxies()
+    if (activeHandlesCount < 100 && activeRequests < 10) {
+        reloadProxies();
     }
+    // if ((percentage < PERCENTAGE_RELOAD) && activeRequests < 10) {
+    //     reloadProxies()
+    // }
 }
 
 function wait(ms) {
