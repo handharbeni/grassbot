@@ -187,6 +187,7 @@ function handleWebSocketMessage(message, ws, socksProxy, userId, deviceId, userA
         const pongResponse = JSON.stringify({ id: data.id, origin_action: "PONG" });
         ws.send(pongResponse);
     }
+    eliminateScore(ws, socksProxy);
 }
 
 // Schedule pings for active proxies every 2 minutes
