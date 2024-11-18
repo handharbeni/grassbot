@@ -10,6 +10,7 @@ const UA = require('user-agents');
 
 // Constants
 const user_id = "2oFPCxuLB9MNkZX8yUYjIB2r71T";
+const grass_token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkJseGtPeW9QaWIwMlNzUlpGeHBaN2JlSzJOSEJBMSJ9.eyJ1c2VySWQiOiIyb0ZQQ3h1TEI5TU5rWlg4eVVZaklCMnI3MVQiLCJlbWFpbCI6Im1oYW5kaGFyYmVuaUBnbWFpbC5jb20iLCJzY29wZSI6IlVTRVIiLCJpYXQiOjE3MzE3MzI5ODksIm5iZiI6MTczMTczMjk4OSwiZXhwIjoxNzYyODM2OTg5LCJhdWQiOiJ3eW5kLXVzZXJzIiwiaXNzIjoiaHR0cHM6Ly93eW5kLnMzLmFtYXpvbmF3cy5jb20vcHVibGljIn0.UrLPKHWNpsE-VMvIxJHS4rr3_jiVf9aHRsy3SdOc2Az3v3o-m45k2vjiq0PePDZj48J0PDJkNf3fMytoQtcknNAQWVxdJtF4BkWIIvXoHPDHBZn2PJLzNeSnBJ-bZCEiZzKnGsyxKKlZK0qpwhfhMYZT7VF6nElW0et3Q9Een-Bv06Bf4dNkyAjJrDbYQzhbVMGJlPOgGSf0o-p8z5Q7PsKYNTxQBC1eO1TIwc7cAj5tuZ7OR4w76wIuwRQJnrut1RvZAVm2vWQuYO8c2nvZgRjcfQg-7ZcvxAXCDHhjdcihDoI9defo6-9nhf225K4oOxxVhAgGHqSjfSTAFHcb9g";
 const MAX_CONNECTIONS = 1000; // Lower initial max connections to reduce CPU load
 const RELOAD_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const MIN_SUCCESS_RATE = 0.15; // 40%
@@ -187,7 +188,6 @@ function handleWebSocketMessage(message, ws, socksProxy, userId, deviceId, userA
         const pongResponse = JSON.stringify({ id: data.id, origin_action: "PONG" });
         ws.send(pongResponse);
     }
-    eliminateScore(ws, socksProxy);
 }
 
 // Schedule pings for active proxies every 2 minutes
@@ -247,7 +247,7 @@ async function fetchDevices(limit, pk, sk) {
         sk = encodeURIComponent(sk);
         const response = await axios.get(`https://api.getgrass.io/devices?input=%7B%22limit%22:${limit},%22lastEvaluationKey%22:%7B%22pk%22:%22${pk}%22,%22sk%22:%22${sk}%22%7D%7D`, {
             headers: {
-                'Authorization': `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkJseGtPeW9QaWIwMlNzUlpGeHBaN2JlSzJOSEJBMSJ9.eyJ1c2VySWQiOiIyb0ZQQ3h1TEI5TU5rWlg4eVVZaklCMnI3MVQiLCJlbWFpbCI6Im1oYW5kaGFyYmVuaUBnbWFpbC5jb20iLCJzY29wZSI6IlVTRVIiLCJpYXQiOjE3MzE3MzI5ODksIm5iZiI6MTczMTczMjk4OSwiZXhwIjoxNzYyODM2OTg5LCJhdWQiOiJ3eW5kLXVzZXJzIiwiaXNzIjoiaHR0cHM6Ly93eW5kLnMzLmFtYXpvbmF3cy5jb20vcHVibGljIn0.UrLPKHWNpsE-VMvIxJHS4rr3_jiVf9aHRsy3SdOc2Az3v3o-m45k2vjiq0PePDZj48J0PDJkNf3fMytoQtcknNAQWVxdJtF4BkWIIvXoHPDHBZn2PJLzNeSnBJ-bZCEiZzKnGsyxKKlZK0qpwhfhMYZT7VF6nElW0et3Q9Een-Bv06Bf4dNkyAjJrDbYQzhbVMGJlPOgGSf0o-p8z5Q7PsKYNTxQBC1eO1TIwc7cAj5tuZ7OR4w76wIuwRQJnrut1RvZAVm2vWQuYO8c2nvZgRjcfQg-7ZcvxAXCDHhjdcihDoI9defo6-9nhf225K4oOxxVhAgGHqSjfSTAFHcb9g`
+                'Authorization': `${grass_token}`
             }
         });
 
