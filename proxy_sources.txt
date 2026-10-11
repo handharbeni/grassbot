@@ -18,3 +18,4 @@ https://raw.githubusercontent.com/officialputuid/KangProxy/KangProxy/https/https
 https://raw.githubusercontent.com/officialputuid/KangProxy/KangProxy/socks4/socks4.txt,socks4://
 https://raw.githubusercontent.com/officialputuid/KangProxy/KangProxy/socks5/socks5.txt,socks5://
 https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text,
+https://rcloak.com/api/proxies/raw?protocol=all,
